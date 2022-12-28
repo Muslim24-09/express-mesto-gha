@@ -1,48 +1,45 @@
-// const getUsers = (req, res, next) => {
-//   // ...
-// };
+const User = require('../models/user');
 
-// const createUser = (req, res, next) => {
-//   // ...
-// };
+const getUsers = (req, res) => {
+  User.find({})
+    .then((users) => res.status(200).send({ data: users }))
+    .catch((err) => res.status(404).send({ message: `Error: ${err} "Запрашиваемые пользователи не найдены"` }));
+};
 
-// const updateUserProfile = (req, res, next) => {
-//   // ...
-// };
+const getUserById = (req, res) => {
+  User.findById(req.params.userId)
+    .then((user) => res.status(200).send({ data: user }))
+    .catch((err) => res.status(404).send({ message: `Error: ${err} - "Запрашиваемый пользователь не найден"` }));
+};
 
-// const deleteUser = (req, res, next) => {
-//   // ...
-// };
+const createUser = (req, res) => {
+  const { name, about, avatar } = req.body;
 
-// module.exports = {
-//   getUsers,
-//   createUser,
-//   updateUserProfile,
-//   deleteUser,
-// };
+  User.create({ name, about, avatar })
+    .then((user) => res.send({ data: user }))
+    .catch((err) => res.status(400).send({ message: `Error: ${err} "Переданы некорректные данные"` }));
+};
 
-// const User = require('../models/user');
+const updateUser = (req, res) => {
+  const { name, about } = req.body;
 
-// module.exports.getUser = (req, res) => {
-//   User.findById(req.params.userId)
-//     .then((user) => res.send(user))
-//     .catch(err);
-// };
+  User.findByIdAndUpdate(req.user._id, { name, about })
+    .then((user) => res.status(200).send({ data: user }))
+    .catch((err) => res.status(400).send({ message: `Error: ${err} "Переданы некорректные данные"` }));
+};
 
-// module.exports.getUsers = (req, res, next) => {
-//   User.find({})
-//     .then((users) => res.send(users))
-//     .catch(err);
-// };
+const updateAvatar = (req, res) => {
+  const { avatar } = req.body;
 
-// module.exports.createUser = (req, res, next) => {
-//   const {
-//     name, about, avatar,
-//   } = req.body;
+  User.findByIdAndUpdate(req.user._id, { avatar })
+    .then((user) => res.status(200).send({ data: user }))
+    .catch((err) => res.status(400).send({ message: `Error: ${err} "Переданы некорректные данные"` }));
+};
 
-//   const createUser = () => User.create({
-//     name,
-//     about,
-//     avatar,
-//   });
-// };
+module.exports = {
+  getUsers,
+  getUserById,
+  createUser,
+  updateUser,
+  updateAvatar,
+};
