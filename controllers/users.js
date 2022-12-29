@@ -3,7 +3,7 @@ const User = require('../models/user');
 const BadRequestError = require('../errors/BadRequestError');
 const NotFoundError = require('../errors/NotFoundError');
 
-const getUsers = (req, res) => {
+const getUsers = (_, res) => {
   User.find({})
     .then((users) => res.status(200).send({ data: users }))
     .catch((err) => res.status(400).send({ message: `Error: ${err} "Запрашиваемые пользователи не найдены"` }));
@@ -13,13 +13,13 @@ const getUserById = (req, res, next) => {
   User.findById(req.params.userId)
     .then((user) => {
       if (!user) {
-        throw new NotFoundError('User not found');
+        throw new NotFoundError('Запрашиваемый пользователь не найден');
       }
       return res.status(200).send({ data: user });
     })
     .catch((err) => {
       if (err.kind === 'ObjectId') {
-        return next(new BadRequestError('Id is not correct'));
+        return next(new BadRequestError('Введен некорретный id'));
       }
       return next(err);
     });
@@ -44,23 +44,22 @@ const createUser = (req, res, next) => {
 const updateUser = (req, res, next) => {
   const { name, about } = req.body;
 
-  User.findByIdAndUpdate(req.user._id, { name, about })
+  return User.findByIdAndUpdate(req.user._id, { name, about })
     .then((user) => {
       if (!user) {
-        throw new NotFoundError('Пользователь не найден');
-      } else {
-        res.status(200).send({ data: user });
+        throw new NotFoundError('Запрашиваемый пользователь не найден');
       }
+      return res.status(200).send({ data: user });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        const errorMessage = Object.values(err.errors)
-          .map((error) => error.message)
-          .join(', ');
-        return next(new BadRequestError(`Validation error: ${errorMessage}`));
+        return next(
+          new BadRequestError(''),
+        );
       }
-      res.status(500).send({ message: `Error: ${err} "Переданы некорректные данные"` });
-
+      if (err.kind === 'ObjectId') {
+        return next(new BadRequestError('Введен некорретный id'));
+      }
       return next(err);
     });
 };
@@ -71,7 +70,7 @@ const updateAvatar = (req, res, next) => {
   User.findByIdAndUpdate(req.user._id, { avatar })
     .then((user) => {
       if (!user) {
-        throw new NotFoundError('Пользователь не найден');
+        throw new NotFoundError('Запрашиваемый пользователь не найден');
       } else {
         res.status(200).send({ data: user });
       }
