@@ -77,10 +77,7 @@ const updateAvatar = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        const errorMessage = Object.values(err.errors)
-          .map((error) => error.message)
-          .join(', ');
-        return next(new BadRequestError(`Validation error: ${errorMessage}`));
+        res.status(400).send({ message: `Error: ${err} ` });
       }
       res.status(500).send({ message: `Error: ${err} "Переданы некорректные данные"` });
 
