@@ -17,7 +17,7 @@ mongoose.connect(MONGO_URL, () => {
 });
 
 app.use(express.json());
-app.use((req, res, next) => {
+app.use((req, _, next) => {
   req.user = {
     _id: '63ac710e2f06bc5fa79b43e6',
   };
@@ -25,6 +25,10 @@ app.use((req, res, next) => {
 });
 app.use('/users', require('./routes/users'));
 app.use('/cards', require('./routes/cards'));
+
+app.patch('/404', (_, res) => {
+  res.status(404).send({ message: '404. Page not found' });
+});
 
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
