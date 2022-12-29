@@ -8,8 +8,13 @@ const getCards = (req, res) => {
 
 const deleteCardById = (req, res) => {
   Card.findByIdAndRemove(req.params.cardId)
-    .then((card) => res.status(200).send({ data: card }))
-    .catch((err) => res.status(404).send({ message: `Error ${err} "Запрашиваемая карточка не найдена"` }));
+    .then((card) => {
+      if (!card) {
+        res.status(404).send({ message: 'Запрашиваемая карточка не найдена' });
+      }
+      res.status(200).send({ data: card });
+    })
+    .catch((err) => res.status(400).send({ message: `Error ${err} "Запрашиваемая карточка не найдена"` }));
 };
 
 const createCard = (req, res) => {
@@ -27,8 +32,13 @@ const likeCard = (req, res) => {
     { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
     { new: true },
   )
-    .then((card) => res.status(200).send({ data: card }))
-    .catch((err) => res.status(500).send({ message: `Error: ${err}` }));
+    .then((card) => {
+      if (!card) {
+        res.status(404).send({ message: 'Запрашиваемая карточка не найдена' });
+      }
+      res.status(200).send({ data: card });
+    })
+    .catch((err) => res.status(400).send({ message: `${err.name}: ${err.message}` }));
 };
 
 const dislikeCard = (req, res) => {
@@ -37,8 +47,13 @@ const dislikeCard = (req, res) => {
     { $pull: { likes: req.user._id } }, // убрать _id из массива
     { new: true },
   )
-    .then((card) => res.status(200).send({ data: card }))
-    .catch((err) => res.status(500).send({ message: `Error: ${err}` }));
+    .then((card) => {
+      if (!card) {
+        res.status(404).send({ message: 'Запрашиваемая карточка не найдена' });
+      }
+      res.status(200).send({ data: card });
+    })
+    .catch((err) => res.status(400).send({ message: `${err.name}: ${err.message}` }));
 };
 
 module.exports = {

@@ -19,7 +19,7 @@ const getUserById = (req, res, next) => {
         res.status(400).send({ message: `${err.name}: ${err.message} ` });
         next(err);
       } else if (err.kind === 'ObjectId') {
-        res.status(500).send({ message: `${err.name}: ${err.message} ` });
+        res.status(400).send({ message: `${err.name}: ${err.message} ` });
       }
       return next(err);
     });
@@ -41,7 +41,7 @@ const createUser = (req, res, next) => {
 const updateUser = (req, res, next) => {
   const { name, about } = req.body;
 
-  return User.findByIdAndUpdate(req.user._id, { name, about })
+  return User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
     .then((user) => {
       if (!user) {
         res.status(404).send({ message: 'Запрашиваемый пользователь не найден' });
@@ -53,7 +53,7 @@ const updateUser = (req, res, next) => {
         res.status(400).send({ message: `${err.name}: ${err.message} ` });
         next(err);
       } else if (err.kind === 'ObjectId') {
-        res.status(500).send({ message: `${err.name}: ${err.message} ` });
+        res.status(400).send({ message: `${err.name}: ${err.message} ` });
       }
       return next(err);
     });
@@ -62,7 +62,7 @@ const updateUser = (req, res, next) => {
 const updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
 
-  User.findByIdAndUpdate(req.user._id, { avatar })
+  User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
     .then((user) => {
       if (!user) {
         res.status(404).send({ message: 'Запрашиваемый пользователь не найден' });
