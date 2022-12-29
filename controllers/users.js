@@ -1,39 +1,92 @@
 const User = require('../models/user');
 
+const BadRequestError = require('../errors/BadRequestError');
+const NotFoundError = require('../errors/NotFoundError');
+
 const getUsers = (req, res) => {
   User.find({})
     .then((users) => res.status(200).send({ data: users }))
     .catch((err) => res.status(400).send({ message: `Error: ${err} "Запрашиваемые пользователи не найдены"` }));
 };
 
-const getUserById = (req, res) => {
+const getUserById = (req, res, next) => {
   User.findById(req.params.userId)
-    .then((user) => res.status(200).send({ data: user }))
-    .catch((err) => res.status(400).send({ message: `Error: ${err} - "Запрашиваемый пользователь не найден"` }));
+    .then((user) => {
+      if (!user) {
+        throw new NotFoundError('User not found');
+      }
+      return res.status(200).send({ data: user });
+    })
+    .catch((err) => {
+      if (err.kind === 'ObjectId') {
+        return next(new BadRequestError('Id is not correct'));
+      }
+      return next(err);
+    });
 };
 
-const createUser = (req, res) => {
+const createUser = (req, res, next) => {
   const { name, about, avatar } = req.body;
 
   User.create({ name, about, avatar })
     .then((user) => res.send({ data: user }))
-    .catch((err) => res.status(500).send({ message: `Error: ${err} "Переданы некорректные данные"` }));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        const errorMessage = Object.values(err.errors)
+          .map((error) => error.message)
+          .join(', ');
+        return next(new BadRequestError(`Validation error: ${errorMessage}`));
+      }
+      return next(err);
+    });
 };
 
-const updateUser = (req, res) => {
+const updateUser = (req, res, next) => {
   const { name, about } = req.body;
 
   User.findByIdAndUpdate(req.user._id, { name, about })
-    .then((user) => res.status(200).send({ data: user }))
-    .catch((err) => res.status(500).send({ message: `Error: ${err} "Переданы некорректные данные"` }));
+    .then((user) => {
+      if (!user) {
+        throw new NotFoundError('Пользователь не найден');
+      } else {
+        res.status(200).send({ data: user });
+      }
+    })
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        const errorMessage = Object.values(err.errors)
+          .map((error) => error.message)
+          .join(', ');
+        return next(new BadRequestError(`Validation error: ${errorMessage}`));
+      }
+      res.status(500).send({ message: `Error: ${err} "Переданы некорректные данные"` });
+
+      return next(err);
+    });
 };
 
-const updateAvatar = (req, res) => {
+const updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
 
   User.findByIdAndUpdate(req.user._id, { avatar })
-    .then((user) => res.status(200).send({ data: user }))
-    .catch((err) => res.status(500).send({ message: `Error: ${err} "Переданы некорректные данные"` }));
+    .then((user) => {
+      if (!user) {
+        throw new NotFoundError('Пользователь не найден');
+      } else {
+        res.status(200).send({ data: user });
+      }
+    })
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        const errorMessage = Object.values(err.errors)
+          .map((error) => error.message)
+          .join(', ');
+        return next(new BadRequestError(`Validation error: ${errorMessage}`));
+      }
+      res.status(500).send({ message: `Error: ${err} "Переданы некорректные данные"` });
+
+      return next(err);
+    });
 };
 
 module.exports = {
