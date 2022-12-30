@@ -2,8 +2,13 @@ const User = require('../models/user');
 
 const getUsers = (_, res) => {
   User.find({})
-    .then((users) => res.status(200).send({ data: users }))
-    .catch((err) => res.status(400).send({ message: `Error: ${err} "Запрашиваемые пользователи не найдены"` }));
+    .then((users) => {
+      if (!users) {
+        res.status(400).send({ message: 'Запрашиваемые пользователи не найдены' });
+      }
+      res.status(200).send({ data: users });
+    })
+    .catch((err) => res.status(500).send({ message: `Error ${err} "На сервере произошла ошибка"` }));
 };
 
 const getUserById = (req, res, next) => {
@@ -20,8 +25,10 @@ const getUserById = (req, res, next) => {
         next(err);
       } else if (err.kind === 'ObjectId') {
         res.status(400).send({ message: `${err.name}: ${err.message} ` });
+        next(err);
+      } else {
+        res.status(500).send({ message: `Error ${err} "На сервере произошла ошибка"` });
       }
-      return next(err);
     });
 };
 
@@ -33,8 +40,10 @@ const createUser = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(400).send({ message: `${err.name}: ${err.message} ` });
+        next(err);
+      } else {
+        res.status(500).send({ message: `${err.name}: ${err.message} ` });
       }
-      return next(err);
     });
 };
 
@@ -54,8 +63,10 @@ const updateUser = (req, res, next) => {
         next(err);
       } else if (err.kind === 'ObjectId') {
         res.status(400).send({ message: `${err.name}: ${err.message} ` });
+        next(err);
+      } else {
+        res.status(500).send({ message: `${err.name}: ${err.message} ` });
       }
-      return next(err);
     });
 };
 
@@ -74,7 +85,7 @@ const updateAvatar = (req, res, next) => {
       if (err.name === 'ValidationError') {
         res.status(400).send({ message: `${err.name}: ${err.message} ` });
       }
-      res.status(500).send({ message: `Error: ${err} "Переданы некорректные данные"` });
+      res.status(500).send({ message: `Error ${err} "На сервере произошла ошибка"` });
       return next(err);
     });
 };
