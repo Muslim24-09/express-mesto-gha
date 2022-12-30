@@ -34,6 +34,9 @@ const createCard = (req, res, next) => {
       if (err.name === 'ValidationError') {
         res.status(400).send({ message: `Error: ${err} "Переданы некорректные данные"` });
         next(err);
+      } else if (err.name === 'CastError') {
+        res.status(400).send({ message: `Error: ${err} "Переданы некорректные данные"` });
+        next(err);
       } else {
         res.status(500).send({ message: `Error ${err} "На сервере произошла ошибка"` });
       }
@@ -54,6 +57,9 @@ const likeCard = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
+        res.status(400).send({ message: `Error: ${err} "Переданы некорректные данные"` });
+        next(err);
+      } else if (err.name === 'CastError') {
         res.status(400).send({ message: `Error: ${err} "Переданы некорректные данные"` });
         next(err);
       } else {
@@ -78,6 +84,9 @@ const dislikeCard = (req, res, next) => {
       if (err.name === 'ValidationError') {
         res.status(400).send({ message: `Error: ${err} "Переданы некорректные данные"` });
         next(err);
+      } else if (err.name === 'CastError') {
+        res.status(400).send({ message: `Error: ${err} "Переданы некорректные данные"` });
+        next();
       } else {
         res.status(500).send({ message: `Error ${err} "На сервере произошла ошибка"` });
       }
