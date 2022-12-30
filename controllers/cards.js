@@ -12,7 +12,7 @@ const getCards = (req, res) => {
     .catch((err) => res.status(500).send({ message: `Error ${err} "На сервере произошла ошибка"` }));
 };
 
-const deleteCardById = (req, res) => {
+const deleteCardById = (req, res, next) => {
   Card.findByIdAndRemove(req.params.cardId)
     .then((card) => {
       if (!card) {
@@ -22,8 +22,19 @@ const deleteCardById = (req, res) => {
       }
       res.status(200).send({ data: card });
     })
-    .catch((err) => res.status(500).send({ message: `Error ${err} "На сервере произошла ошибка"` }));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(400).send({ message: `Error: ${err} "Переданы некорректные данные"` });
+        next(err);
+      } else if (err.name === 'CastError') {
+        res.status(400).send({ message: `Error: ${err} "Переданы некорректные данные"` });
+        next(err);
+      } else {
+        res.status(500).send({ message: `Error ${err} "На сервере произошла ошибка"` });
+      }
+    });
 };
+
 const createCard = (req, res, next) => {
   const { name, link } = req.body;
   Card.create({
@@ -86,7 +97,7 @@ const dislikeCard = (req, res, next) => {
         next(err);
       } else if (err.name === 'CastError') {
         res.status(400).send({ message: `Error: ${err} "Переданы некорректные данные"` });
-        next();
+        next(err);
       } else {
         res.status(500).send({ message: `Error ${err} "На сервере произошла ошибка"` });
       }
