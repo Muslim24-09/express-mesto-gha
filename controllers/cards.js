@@ -20,6 +20,9 @@ const deleteCardById = (req, res, next) => {
       } else if (!req.params.cardId) {
         res.status(400).send({ message: 'Указан неверный id' });
       }
+      if (!card.owner.equals(req.user._id)) {
+        res.status(400).send({ message: 'Вы можете удалить только свою карточку!' });
+      }
       res.status(200).send({ data: card });
     })
     .catch((err) => {

@@ -1,6 +1,9 @@
 const express = require('express');
 const mongoose = require('mongoose');
 
+const { login, createUser } = require('./controllers/users');
+const auth = require('./middlewares/auth');
+
 const MONGO_URL = 'mongodb://localhost:27017/mestodb';
 
 mongoose.set('strictQuery', false);
@@ -17,14 +20,12 @@ mongoose.connect(MONGO_URL, () => {
 });
 
 app.use(express.json());
-app.use((req, _, next) => {
-  req.user = {
-    _id: '63ac710e2f06bc5fa79b43e6',
-  };
-  next();
-});
-app.use('/users', require('./routes/users'));
-app.use('/cards', require('./routes/cards'));
+
+app.post('/signin', login);
+app.post('/signup', createUser);
+
+app.use('/users', auth, require('./routes/users'));
+app.use('/cards', auth, require('./routes/cards'));
 
 app.patch('/404', (_, res) => {
   res.status(404).send({ message: '404. Page not found' });
