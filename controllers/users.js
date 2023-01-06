@@ -2,11 +2,14 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
-const login = (req, res) => {
+const login = (req, res, next) => {
   const { email, password } = req.body;
 
   return User.findUserByCredentials(email, password)
     .then((user) => {
+      if (!user) {
+        res.status(401).send({ message: 'Пользователь с таким логином/паролем не найден' });
+      }
       const token = jwt.sign({ _id: user._id }, 'super-strong-secret', { expiresIn: '7d' });
       res
         .cookie('jwt', token, {
@@ -16,8 +19,17 @@ const login = (req, res) => {
         })
         .send({ message: 'Успешная авторизация' });
     })
-    .catch((err) => res.status(500).send({ message: `Error ${err} "На сервере произошла ошибка"` }));
-  // ! Исправить коды ошибок на 401 при неправильных почте или пароле
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(400).send({ message: 'Неправильно набран логин или пароль' });
+        next(err);
+      } else if (err.name === 'MongoError' || err.code === 11000) {
+        res.status(409).send({ message: 'Пользователь с таким email уже зарегистрирован' });
+        next(err);
+      } else {
+        res.status(500).send({ message: `Error ${err} "На сервере произошла ошибка"` });
+      }
+    });
 };
 
 const getCurrentUser = (req, res) => {
@@ -81,7 +93,14 @@ const createUser = (req, res, next) => {
       email,
       password: hash,
     }))
-    .then((user) => res.status(200).send({ data: user }))
+    .then((user) => res
+      .status(200)
+      .send({
+        name: user.name,
+        about: user.about,
+        avatar,
+        email: user.email,
+      }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(400).send({ message: `${err.name}: ${err.message} ` });
@@ -90,7 +109,7 @@ const createUser = (req, res, next) => {
         res.status(409).send({ message: 'Пользователь с таким email уже зарегистрирован' });
         next(err);
       } else {
-        res.status(500).send({ message: `${err.name}: ${err.message} ` });
+        res.status(500).send({ message: `Error ${err} "На сервере произошла ошибка"` });
       }
     });
 };
@@ -113,7 +132,7 @@ const updateUser = (req, res, next) => {
         res.status(400).send({ message: `${err.name}: ${err.message} ` });
         next(err);
       } else {
-        res.status(500).send({ message: `${err.name}: ${err.message} ` });
+        res.status(500).send({ message: `Error ${err} "На сервере произошла ошибка"` });
       }
     });
 };

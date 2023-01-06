@@ -32,16 +32,18 @@ app.post('/signin', celebrate({
 }), login);
 app.post('/signup', celebrate({
   body: Joi.object().keys({
-    name: Joi.string().required().min(2).max(30),
-    about: Joi.string().required().min(2).max(20),
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(20),
     avatar: Joi.string().pattern(regExp),
     email: Joi.string().required().email(),
     password: Joi.string().required().min(8),
   }),
 }), createUser);
-
-app.use('/users', auth, require('./routes/users'));
-app.use('/cards', auth, require('./routes/cards'));
+app.use(auth);
+app.use('/users', require('./routes/users'));
+app.use('/cards', require('./routes/cards'));
+// app.use('/users', auth, require('./routes/users'));
+// app.use('/cards', auth, require('./routes/cards'));
 
 app.patch('/404', (_, res) => {
   res.status(404).send({ message: '404. Page not found' });
