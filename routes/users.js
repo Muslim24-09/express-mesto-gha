@@ -1,7 +1,7 @@
 const router = require('express').Router(); // создали роутер
 const { celebrate, Joi } = require('celebrate');
 
-const regExp = /(https?:\/\/)(w{3}\.)?([a-zA-Z0-9-]{0,63}\.)([a-zA-Z]{2,4})(\/[\w\-._~:/?#[\]@!$&'()*+,;=]#?)?/;
+const regExp = require('../constants/constants');
 
 const {
   getUsers,
