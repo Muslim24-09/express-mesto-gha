@@ -108,7 +108,7 @@ const getUserById = (req, res, next) => {
       if (err.name === 'ValidationError') {
         throw new BadRequestError('Неправильно набран логин или пароль');
       } else if (err.kind === 'ObjectId') {
-        res.status(409).send({ message: 'Неверно указан тип id' });
+        res.status(400).send({ message: 'Неверно указан тип id' });
       } else next(err);
     });
 };
