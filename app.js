@@ -3,7 +3,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 
 const helmet = require('helmet');
-const { celebrate, Joi } = require('celebrate');
+const { celebrate, Joi, errors } = require('celebrate');
 
 const auth = require('./middlewares/auth');
 const { login, createUser, unAuthorized } = require('./controllers/users');
@@ -66,12 +66,13 @@ app.patch('/404', (_, res) => {
 //   res.status(500).send({ message: `На сервере произошла ошибка: ${err.message}` });
 //   next();
 // });
-app.use((err, _, res, next) => {
-  const { statusCode = 500, message = 'Server error' } = err;
-  res.status(statusCode).send({ message });
-  next();
-});
+// app.use((err, _, res, next) => {
+//   const { statusCode = 500, message = 'Server error' } = err;
+//   res.status(statusCode).send({ message });
+//   next();
+// });
 
+app.use(errors());
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
 });
