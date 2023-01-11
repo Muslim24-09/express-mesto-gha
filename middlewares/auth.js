@@ -12,7 +12,7 @@ module.exports = (req, res, next) => {
   // const token = extractBearerToken(Authorization);
 
   // иначе не работает авторизация. Причину не нашел - в request не приходят заголовки (headers)
-  const token = req.rawHeaders.find((el) => el.match('jwt')).replace('jwt=', '');
+  const token = req.rawHeaders.find((el) => el.match('jwt')) ? req.rawHeaders.find((el) => el.match('jwt')).replace('jwt=', '') : 0;
 
   if (!token) {
     return handleAuthError(res);
