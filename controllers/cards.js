@@ -1,6 +1,6 @@
 const Card = require('../models/card');
 
-const getCards = (req, res) => {
+const getCards = (_, res) => {
   Card.find({})
     .then((cards) => {
       if (!cards) {
@@ -21,7 +21,7 @@ const deleteCardById = (req, res, next) => {
         res.status(400).send({ message: 'Указан неверный id' });
       }
       if (!card.owner.equals(req.user._id)) {
-        res.status(400).send({ message: 'Вы можете удалить только свою карточку!' });
+        res.status(403).send({ message: 'Вы можете удалить только свою карточку!' });
       }
       res.status(200).send({ data: card });
     })

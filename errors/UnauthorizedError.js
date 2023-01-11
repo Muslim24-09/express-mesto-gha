@@ -1,8 +1,7 @@
-class UnauthorizedError extends Error {
-  constructor(message) {
-    super(message);
-    this.statusCode = 401;
-  }
-}
+const handleAuthError = (res) => {
+  res
+    .status(401)
+    .send({ message: 'Необходима авторизация' });
+};
 
-module.exports = UnauthorizedError;
+module.exports = handleAuthError;

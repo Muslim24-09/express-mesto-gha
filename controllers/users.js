@@ -6,32 +6,6 @@ const ConflictError = require('../errors/ConflictError');
 const BadRequestError = require('../errors/ConflictError');
 const NotFoundError = require('../errors/NotFoundError');
 
-const login = (req, res, next) => {
-  const { email, password } = req.body;
-
-  return User.findUserByCredentials(email, password)
-    .then((user) => {
-      if (!user) {
-        res.status(401).send({ message: 'Пользователь с таким логином/паролем не найден' });
-      }
-      const token = jwt.sign({ _id: user._id }, 'super-strong-secret', { expiresIn: '7d' });
-      res
-        .cookie('jwt', token, {
-          maxAge: 3600000 * 24 * 7,
-          httpOnly: true,
-          sameSite: true,
-        })
-        .send({ message: 'Успешная авторизация' });
-    })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        throw new BadRequestError({ message: 'Неправильно набран логин или пароль' });
-      } else if (err.name === 'MongoError' || err.code === 11000) {
-        throw new ConflictError({ message: 'Пользователь с таким email уже зарегистрирован' });
-      } else next(err);
-    });
-};
-
 const createUser = (req, res, next) => {
   const {
     name,
@@ -73,15 +47,30 @@ const createUser = (req, res, next) => {
     });
 };
 
-const getCurrentUser = (req, res, next) => {
-  User.findById(req.user._id)
+const login = (req, res, next) => {
+  const { email, password } = req.body;
+
+  return User.findUserByCredentials(email, password)
     .then((user) => {
       if (!user) {
-        throw new NotFoundError('Запрашиваемый пользователь не найден');
+        res.status(401).send({ message: 'Пользователь с таким логином/паролем не найден' });
       }
-      return res.status(200).send({ data: user });
+      const token = jwt.sign({ _id: user._id }, 'super-strong-secret', { expiresIn: '7d' });
+      res
+        .cookie('jwt', token, {
+          maxAge: 3600000 * 24 * 7,
+          httpOnly: true,
+          sameSite: true,
+        })
+        .send({ message: 'Успешная авторизация' });
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        throw new BadRequestError({ message: 'Неправильно набран логин или пароль' });
+      } else if (err.name === 'MongoError' || err.code === 11000) {
+        throw new ConflictError({ message: 'Пользователь с таким email уже зарегистрирован' });
+      } else next(err);
+    });
 };
 
 const getUsers = (_, res, next) => {
@@ -92,14 +81,26 @@ const getUsers = (_, res, next) => {
       }
       res.status(200).send({ data: users });
     })
-    .catch(next);
+    .catch((err) => next(err));
 };
 
-const getUserById = (req, res, next) => {
-  User.findById(req.params.userId)
+const getCurrentUser = (req, res, next) => {
+  User.findById(req.user._id)
     .then((user) => {
       if (!user) {
         throw new NotFoundError('Запрашиваемый пользователь не найден');
+      }
+      return res.status(200).send({ data: user });
+    })
+    .catch((err) => next(err));
+};
+
+const getUserById = (req, res, next) => {
+  console.log(req.params);
+  User.findById(req.params.userId)
+    .then((user) => {
+      if (!user) {
+        res.status(404).send({ message: 'Запрашиваемый пользователь не найден' });
       }
       return res.status(200).send({ data: user });
     })
@@ -107,7 +108,7 @@ const getUserById = (req, res, next) => {
       if (err.name === 'ValidationError') {
         throw new BadRequestError('Неправильно набран логин или пароль');
       } else if (err.kind === 'ObjectId') {
-        throw new BadRequestError('Неверно указан тип id');
+        res.status(409).send({ message: 'Неверно указан тип id' });
       } else next(err);
     });
 };
@@ -118,7 +119,7 @@ const updateUser = (req, res, next) => {
   return User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
     .then((user) => {
       if (!user) {
-        throw new NotFoundError('Запрашиваемый пользователь не найден');
+        res.status(404).send({ message: 'Запрашиваемый пользователь не найден' });
       }
       return res.status(200).send({ data: user });
     })
@@ -133,7 +134,6 @@ const updateUser = (req, res, next) => {
 
 const updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
-
   User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
     .then((user) => {
       if (!user) {

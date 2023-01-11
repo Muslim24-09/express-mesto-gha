@@ -51,26 +51,10 @@ app.post('/signout', unAuthorized);
 app.use(auth);
 app.use('/users', require('./routes/users'));
 app.use('/cards', require('./routes/cards'));
-// app.use('/users', auth, require('./routes/users'));
-// app.use('/cards', auth, require('./routes/cards'));
 
 app.patch('/404', (_, res) => {
   res.status(404).send({ message: '404. Page not found' });
 });
-
-// app.use((err, req, res, next) => {
-//   if (err.status) {
-//     res.status(err.status).send(err.message);
-//     return;
-//   }
-//   res.status(500).send({ message: `На сервере произошла ошибка: ${err.message}` });
-//   next();
-// });
-// app.use((err, _, res, next) => {
-//   const { statusCode = 500, message = 'Server error' } = err;
-//   res.status(statusCode).send({ message });
-//   next();
-// });
 
 app.use(errors());
 app.listen(PORT, () => {
