@@ -1,7 +1,8 @@
-const handleAuthError = (res) => {
-  res
-    .status(401)
-    .send({ message: 'Необходима авторизация' });
-};
+class HandleAuthError extends Error {
+  constructor(message) {
+    super(message);
+    this.statusCode = 401;
+  }
+}
 
-module.exports = handleAuthError;
+module.exports = HandleAuthError;

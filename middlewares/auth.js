@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const handleAuthError = require('../errors/UnauthorizedError');
+const HandleAuthError = require('../errors/UnauthorizedError');
 // const extractBearerToken = (header) => header.replace('Bearer ', '');
 
 module.exports = (req, res, next) => {
@@ -15,14 +15,14 @@ module.exports = (req, res, next) => {
   const token = req.rawHeaders.find((el) => el.match('jwt')) ? req.rawHeaders.find((el) => el.match('jwt')).replace('jwt=', '') : 0;
 
   if (!token) {
-    return handleAuthError(res);
+    throw new HandleAuthError('Требуется авторизация');
   }
   let payload;
 
   try {
     payload = jwt.verify(token, 'super-strong-secret');
   } catch (err) {
-    return handleAuthError(res);
+    throw new HandleAuthError('Требуется авторизация');
   }
 
   req.user = payload; // записываем пейлоуд в объект запроса

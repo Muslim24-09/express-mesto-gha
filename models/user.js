@@ -10,14 +10,13 @@ const userSchema = new mongoose.Schema({
     maxlength: 30,
     unique: true,
     validate: {
-      validator: (url) => validator.isURL(url),
+      validator: (email) => validator.isEmail(email),
       message: 'Некорректный формат email',
     },
   },
   password: {
     type: String,
     required: true,
-    minlength: 8,
     select: false,
   },
   name: { // у пользователя есть имя — опишем требования к имени в схеме:
@@ -36,6 +35,10 @@ const userSchema = new mongoose.Schema({
   avatar: {
     type: String,
     default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
+    validate: {
+      validator: (url) => validator.isURL(url),
+      message: 'Некорректный формат ссылки',
+    },
   },
 });
 
