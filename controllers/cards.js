@@ -79,8 +79,7 @@ const dislikeCard = (req, res, next) => {
     .then((card) => {
       if (!card) {
         next(new NotFoundError('Запрашиваемая карточка не найдена'));
-      }
-      res.status(200).send({ data: card });
+      } else res.status(200).send({ data: card });
     })
     .catch((err) => {
       if (err.name === 'ValidationError' || err.name === 'CastError') {
