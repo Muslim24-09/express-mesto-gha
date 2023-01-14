@@ -5,6 +5,7 @@ const User = require('../models/user');
 const ConflictError = require('../errors/ConflictError');
 const BadRequestError = require('../errors/BadRequestError');
 const NotFoundError = require('../errors/NotFoundError');
+const UnauthorizedError = require('../errors/UnauthorizedError');
 
 const createUser = (req, res, next) => {
   const {
@@ -36,9 +37,9 @@ const createUser = (req, res, next) => {
           }))
           .catch((err) => {
             if (err.name === 'ValidationError') {
-              throw new BadRequestError('Неправильно набран логин или пароль');
+              next(new BadRequestError('Неправильно набран логин или пароль'));
             } else if (err.name === 'MongoError' || err.code === 11000 || userAlreadyCreated) {
-              throw new ConflictError('Пользователь с таким email уже зарегистрирован');
+              next(new ConflictError('Пользователь с таким email уже зарегистрирован'));
             } else next(err);
           });
       } else {
@@ -53,7 +54,7 @@ const login = (req, res, next) => {
   return User.findUserByCredentials(email, password)
     .then((user) => {
       if (!user) {
-        res.status(401).send({ message: 'Пользователь с таким логином/паролем не найден' });
+        next(new UnauthorizedError('Пользователь с таким логином/паролем не найден'));
       }
       const token = jwt.sign({ _id: user._id }, 'super-strong-secret', { expiresIn: '7d' });
       res
@@ -66,9 +67,9 @@ const login = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        throw new BadRequestError({ message: 'Неправильно набран логин или пароль' });
+        next(new BadRequestError({ message: 'Неправильно набран логин или пароль' }));
       } else if (err.name === 'MongoError' || err.code === 11000) {
-        throw new ConflictError({ message: 'Пользователь с таким email уже зарегистрирован' });
+        next(new ConflictError({ message: 'Пользователь с таким email уже зарегистрирован' }));
       } else next(err);
     });
 };
@@ -76,9 +77,6 @@ const login = (req, res, next) => {
 const getUsers = (_, res, next) => {
   User.find({})
     .then((users) => {
-      if (!users) {
-        throw new NotFoundError('Запрашиваемые пользователи не найдены');
-      }
       res.status(200).send({ data: users });
     })
     .catch((err) => next(err));
@@ -88,7 +86,7 @@ const getCurrentUser = (req, res, next) => {
   User.findById(req.user._id)
     .then((user) => {
       if (!user) {
-        throw new NotFoundError('Запрашиваемый пользователь не найден');
+        next(new NotFoundError('Запрашиваемый пользователь не найден'));
       }
       return res.status(200).send({ data: user });
     })
@@ -96,19 +94,16 @@ const getCurrentUser = (req, res, next) => {
 };
 
 const getUserById = (req, res, next) => {
-  console.log(req.params);
   User.findById(req.params.userId)
     .then((user) => {
       if (!user) {
-        res.status(404).send({ message: 'Запрашиваемый пользователь не найден' });
+        next(new NotFoundError('Запрашиваемый пользователь не найден'));
       }
       return res.status(200).send({ data: user });
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        throw new BadRequestError('Неправильно набран логин или пароль');
-      } else if (err.kind === 'ObjectId') {
-        res.status(400).send({ message: 'Неверно указан тип id' });
+      if (err.kind === 'ObjectId') {
+        next(new BadRequestError('Неправильно введен тип id'));
       } else next(err);
     });
 };
@@ -119,15 +114,13 @@ const updateUser = (req, res, next) => {
   return User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
     .then((user) => {
       if (!user) {
-        res.status(404).send({ message: 'Запрашиваемый пользователь не найден' });
+        next(new NotFoundError('Запрашиваемый пользователь не найден'));
       }
       return res.status(200).send({ data: user });
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        throw new BadRequestError('Неправильно набран логин или пароль');
-      } else if (err.kind === 'ObjectId') {
-        throw new BadRequestError('Неверно указан тип id');
+      if (err.name === 'ValidationError' || err.kind === 'ObjectId') {
+        next(new BadRequestError('Неправильно набран логин или пароль'));
       } else next(err);
     });
 };
@@ -137,14 +130,14 @@ const updateAvatar = (req, res, next) => {
   User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
     .then((user) => {
       if (!user) {
-        throw new NotFoundError('Запрашиваемый пользователь не найден');
+        next(new NotFoundError('Запрашиваемый пользователь не найден'));
       } else {
         res.status(200).send({ data: user });
       }
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        throw new BadRequestError('Запрашиваемый пользователь не найден');
+        next(new BadRequestError('Запрашиваемый пользователь не найден'));
       }
       return next(err);
     });

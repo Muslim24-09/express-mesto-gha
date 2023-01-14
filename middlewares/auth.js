@@ -1,8 +1,8 @@
 const jwt = require('jsonwebtoken');
-const HandleAuthError = require('../errors/UnauthorizedError');
+const UnauthorizedError = require('../errors/UnauthorizedError');
 // const extractBearerToken = (header) => header.replace('Bearer ', '');
 
-module.exports = (req, res, next) => {
+module.exports = (req, _, next) => {
   // закоментированный код не работает - никто не отвечает почему
   // const { Authorization } = req.headers;
 
@@ -15,14 +15,14 @@ module.exports = (req, res, next) => {
   const token = req.rawHeaders.find((el) => el.match('jwt')) ? req.rawHeaders.find((el) => el.match('jwt')).replace('jwt=', '') : 0;
 
   if (!token) {
-    throw new HandleAuthError('Требуется авторизация');
+    next(new UnauthorizedError('Требуется авторизация'));
   }
   let payload;
 
   try {
     payload = jwt.verify(token, 'super-strong-secret');
   } catch (err) {
-    throw new HandleAuthError('Требуется авторизация');
+    next(new UnauthorizedError('Требуется авторизация'));
   }
 
   req.user = payload; // записываем пейлоуд в объект запроса

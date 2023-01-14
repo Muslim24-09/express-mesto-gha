@@ -15,18 +15,11 @@ const { PORT = 3000 } = process.env;
 
 mongoose.set('strictQuery', false);
 
-mongoose.connect(MONGO_URL, () => {
-  console.log('Connected to MongoDB');
-  // опции больше не поддерживаются
-  // useNewUrlParser: true,
-  // useCreateIndex: true,
-  // useFindAndModify: false,
-});
+mongoose.connect(MONGO_URL);
 const app = express();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-// app.use(express.json());
 app.use(helmet());
 
 app.post('/signup', celebrate({
@@ -60,9 +53,9 @@ app.use('*', (_, __, next) => next(new NotFoundError('Страница не на
 app.use((err, _, res, next) => {
   if (err.statusCode) {
     res.status(err.statusCode).send({ message: err.message });
-    return;
+  } else {
+    res.status(500).send({ message: `На сервере произошла ошибка: ${err.message}` });
   }
-  res.status(500).send({ message: `На сервере произошла ошибка: ${err.message}` });
   next();
 });
 
