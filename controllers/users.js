@@ -38,12 +38,12 @@ const createUser = (req, res, next) => {
           .catch((err) => {
             if (err.name === 'ValidationError') {
               next(new BadRequestError('Неправильно набран логин или пароль'));
-            } else if (err.name === 'MongoError' || err.code === 11000 || userAlreadyCreated) {
+            } else if (userAlreadyCreated) {
               next(new ConflictError('Пользователь с таким email уже зарегистрирован'));
             } else next(err);
           });
       } else {
-        next(new ConflictError('Пользователь с таким email уже зарегистрирован'));
+        throw new ConflictError('Пользователь с таким email уже зарегистрирован');
       }
     })
     .catch((err) => next(err));
