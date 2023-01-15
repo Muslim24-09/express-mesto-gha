@@ -16,10 +16,14 @@ const createUser = (req, res, next) => {
     password,
   } = req.body;
 
+  const userAlreadyCreated = async () => {
+    await User.findOne(({ email: req.body.email }));
+  };
+
   return bcrypt
     .hash(password, 10)
     .then(async (hash) => {
-      const userAlreadyCreated = await User.findOne(({ email: req.body.email }));
+      await userAlreadyCreated();
       if (!userAlreadyCreated) {
         await User.create({
           name,
@@ -27,24 +31,23 @@ const createUser = (req, res, next) => {
           avatar,
           email,
           password: hash,
-        }).then((user) => res
-          .status(200)
-          .send({
-            name: user.name,
-            about: user.about,
-            avatar,
-            email: user.email,
-          }))
-          .catch((err) => {
-            if (err.name === 'ValidationError') {
-              next(new BadRequestError('Неправильно набран логин или пароль'));
-            } else if (err.name === 'MongoError' || err.code === 11000 || userAlreadyCreated) {
-              next(new ConflictError('Пользователь с таким email уже зарегистрирован'));
-            } else next(err);
-          });
-      } else {
-        res.status(409).send({ message: 'Пользователь с таким email уже зарегистрирован' });
+        });
       }
+    })
+    .then((user) => res
+      .status(200)
+      .send({
+        name: user.name,
+        about: user.about,
+        avatar,
+        email: user.email,
+      }))
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError('Неправильно набран логин или пароль'));
+      } else if (userAlreadyCreated) {
+        next(new ConflictError('Пользователь с таким email уже зарегистрирован'));
+      } else next(err);
     });
 };
 
@@ -54,7 +57,7 @@ const login = (req, res, next) => {
   return User.findUserByCredentials(email, password)
     .then((user) => {
       if (!user) {
-        next(new UnauthorizedError('Пользователь с таким логином/паролем не найден'));
+        throw new UnauthorizedError('Пользователь с таким логином/паролем не найден');
       }
       const token = jwt.sign({ _id: user._id }, 'super-strong-secret', { expiresIn: '7d' });
       res
@@ -68,8 +71,6 @@ const login = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new BadRequestError({ message: 'Неправильно набран логин или пароль' }));
-      } else if (err.name === 'MongoError' || err.code === 11000) {
-        next(new ConflictError({ message: 'Пользователь с таким email уже зарегистрирован' }));
       } else next(err);
     });
 };
@@ -86,7 +87,7 @@ const getCurrentUser = (req, res, next) => {
   User.findById(req.user._id)
     .then((user) => {
       if (!user) {
-        next(new NotFoundError('Запрашиваемый пользователь не найден'));
+        throw new NotFoundError('Запрашиваемый пользователь не найден');
       }
       return res.status(200).send({ data: user });
     })
@@ -97,7 +98,7 @@ const getUserById = (req, res, next) => {
   User.findById(req.params.userId)
     .then((user) => {
       if (!user) {
-        next(new NotFoundError('Запрашиваемый пользователь не найден'));
+        throw new NotFoundError('Запрашиваемый пользователь не найден');
       }
       return res.status(200).send({ data: user });
     })
@@ -114,7 +115,7 @@ const updateUser = (req, res, next) => {
   return User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
     .then((user) => {
       if (!user) {
-        next(new NotFoundError('Запрашиваемый пользователь не найден'));
+        throw new NotFoundError('Запрашиваемый пользователь не найден');
       }
       return res.status(200).send({ data: user });
     })
@@ -130,7 +131,7 @@ const updateAvatar = (req, res, next) => {
   User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
     .then((user) => {
       if (!user) {
-        next(new NotFoundError('Запрашиваемый пользователь не найден'));
+        throw new NotFoundError('Запрашиваемый пользователь не найден');
       } else {
         res.status(200).send({ data: user });
       }
