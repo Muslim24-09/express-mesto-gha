@@ -16,14 +16,10 @@ const createUser = (req, res, next) => {
     password,
   } = req.body;
 
-  const userAlreadyCreated = async () => {
-    await User.findOne(({ email: req.body.email }));
-  };
-
   return bcrypt
     .hash(password, 10)
     .then(async (hash) => {
-      await userAlreadyCreated();
+      const userAlreadyCreated = await User.findOne(({ email: req.body.email }));
       if (!userAlreadyCreated) {
         await User.create({
           name,
@@ -31,24 +27,26 @@ const createUser = (req, res, next) => {
           avatar,
           email,
           password: hash,
-        });
+        }).then((user) => res
+          .status(200)
+          .send({
+            name: user.name,
+            about: user.about,
+            avatar,
+            email: user.email,
+          }))
+          .catch((err) => {
+            if (err.name === 'ValidationError') {
+              next(new BadRequestError('Неправильно набран логин или пароль'));
+            } else if (err.name === 'MongoError' || err.code === 11000 || userAlreadyCreated) {
+              next(new ConflictError('Пользователь с таким email уже зарегистрирован'));
+            } else next(err);
+          });
+      } else {
+        next(new ConflictError('Пользователь с таким email уже зарегистрирован'));
       }
     })
-    .then((user) => res
-      .status(200)
-      .send({
-        name: user.name,
-        about: user.about,
-        avatar,
-        email: user.email,
-      }))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        next(new BadRequestError('Неправильно набран логин или пароль'));
-      } else if (userAlreadyCreated) {
-        next(new ConflictError('Пользователь с таким email уже зарегистрирован'));
-      } else next(err);
-    });
+    .catch((err) => next(err));
 };
 
 const login = (req, res, next) => {
