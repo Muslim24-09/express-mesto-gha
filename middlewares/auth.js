@@ -15,7 +15,7 @@ module.exports = (req, _, next) => {
   const token = req.rawHeaders.find((el) => el.match('jwt')) ? req.rawHeaders.find((el) => el.match('jwt')).replace('jwt=', '') : 0;
 
   if (!token) {
-    next(new UnauthorizedError('Требуется авторизация'));
+    throw new UnauthorizedError('Требуется авторизация');
   }
   let payload;
 
