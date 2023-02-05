@@ -9,6 +9,7 @@ const auth = require('./middlewares/auth');
 const { login, createUser, unAuthorized } = require('./controllers/users');
 const regExp = require('./constants/constants');
 const NotFoundError = require('./errors/NotFoundError');
+const { requestLogger, errorLogger } = require('./middlewares/logger');
 
 const MONGO_URL = 'mongodb://localhost:27017/mestodb';
 const { PORT = 3000 } = process.env;
@@ -17,6 +18,8 @@ mongoose.set('strictQuery', false);
 
 mongoose.connect(MONGO_URL);
 const app = express();
+
+app.use(requestLogger);
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -58,6 +61,8 @@ app.use((err, _, res, next) => {
   }
   next();
 });
+
+app.use(errorLogger);
 
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
