@@ -48,12 +48,12 @@ app.post('/signin', celebrate({
   }),
 }), login);
 
-// для теста без авторизации
-app.post('/signout', unAuthorized);
-
 app.use(auth);
 app.use('/users', require('./routes/users'));
 app.use('/cards', require('./routes/cards'));
+
+// для теста без авторизации
+app.post('/signout', unAuthorized);
 
 app.use(errors());
 
