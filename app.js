@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 const express = require('express');
 const bodyParser = require('body-parser');
 
+require('dotenv').config();
+
 const helmet = require('helmet');
 const { celebrate, Joi, errors } = require('celebrate');
 
@@ -12,7 +14,7 @@ const NotFoundError = require('./errors/NotFoundError');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 
 const MONGO_URL = 'mongodb://localhost:27017/mestodb';
-const { PORT = 3000 } = process.env;
+const { PORT = 3001 } = process.env;
 
 const cors = (req, res, next) => {
   const { origin } = req.headers;
@@ -71,9 +73,10 @@ app.use('/cards', require('./routes/cards'));
 // для теста без авторизации
 app.post('/signout', unAuthorized);
 
-app.use(errors());
-
 app.use('*', (_, __, next) => next(new NotFoundError('Страница не найдена')));
+
+app.use(errorLogger);
+app.use(errors());
 
 app.use((err, _, res, next) => {
   if (err.statusCode) {
@@ -83,8 +86,6 @@ app.use((err, _, res, next) => {
   }
   next();
 });
-
-app.use(errorLogger);
 
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);

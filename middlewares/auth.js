@@ -9,8 +9,6 @@
 // const { NODE_ENV, JWT_SECRET } = process.env;
 
 // module.exports = (req, _, next) => {
-
-//   console.log(req.headers);
 //   // закоментированный код не работает - никто не отвечает почему
 //   // const { Authorization } = req.headers;
 //   // if (!Authorization || !Authorization.startsWith('Bearer ')) {
@@ -21,7 +19,7 @@
 //   // иначе не работает авторизация. Причину не нашел - в request не приходят заголовки (headers)
 
 //   const token = req.rawHeaders.find((el) => el.match('jwt'))
-// ? req.rawHeaders.find((el) => el.match('jwt')).replace('jwt=', '') : 0;
+//     ? req.rawHeaders.find((el) => el.match('jwt')).replace('jwt=', '') : 0;
 
 //   // const token = jwt.sign(
 //   //   { _id: user._id },
@@ -35,8 +33,8 @@
 //   let payload;
 
 //   try {
-//     payload = jwt.verify(token, { expiresIn: '7d' },
-// NODE_ENV === 'production' ? JWT_SECRET : 'super-strong-secret');
+//     payload = jwt.verify(token,
+// { expiresIn: '7d' }, NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret');
 
 //     // payload = jwt.verify(token, 'super-strong-secret');
 //   } catch (err) {
@@ -54,19 +52,22 @@ const UnauthorizedError = require('../errors/UnauthorizedError');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
-module.exports = (req, _, next) => {
+module.exports = (req, res, next) => {
   const { authorization } = req.headers;
   if (!authorization || !authorization.startsWith('Bearer ')) {
-    throw new UnauthorizedError('Требуется авторизация');
+    throw new UnauthorizedError('Authorization required');
   }
   const token = authorization.replace('Bearer ', '');
   let payload;
   try {
-    payload = jwt.verify(token, { expiresIn: '7d' }, NODE_ENV === 'production' ? JWT_SECRET : 'super-strong-secret');
+    payload = jwt.verify(token, NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret');
+    // payload = jwt.verify(token, { expiresIn: '7d' },
+    // NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret');
   } catch (err) {
-    throw new UnauthorizedError('Требуется авторизация');
+    // next( new UnauthorizedError('222Authorization required'));
+    // throw new UnauthorizedError('222Authorization required');
+    console.log(err);
   }
-
   req.user = payload; // adding the payload to the request object
 
   return next();
