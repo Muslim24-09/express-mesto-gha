@@ -14,7 +14,7 @@ const NotFoundError = require('./errors/NotFoundError');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 
 const MONGO_URL = 'mongodb://localhost:27017/mestodb';
-const { PORT = 3002 } = process.env;
+const { PORT = 3000 } = process.env;
 
 const cors = (req, res, next) => {
   const { origin } = req.headers;
