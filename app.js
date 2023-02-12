@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 const express = require('express');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
-const cors = require('cors');
 
 require('dotenv').config();
 
@@ -10,7 +9,7 @@ const helmet = require('helmet');
 const { celebrate, Joi, errors } = require('celebrate');
 
 const auth = require('./middlewares/auth');
-// const cors = require('./middlewares/cors');
+const cors = require('./middlewares/cors');
 const { login, createUser, unAuthorized } = require('./controllers/users');
 const regExp = require('./constants/constants');
 const NotFoundError = require('./errors/NotFoundError');
@@ -30,7 +29,6 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(helmet());
-
 
 app.use(cors);
 
