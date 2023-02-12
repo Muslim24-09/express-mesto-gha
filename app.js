@@ -9,6 +9,7 @@ const helmet = require('helmet');
 const { celebrate, Joi, errors } = require('celebrate');
 
 const auth = require('./middlewares/auth');
+const cors = require('./middlewares/cors');
 const { login, createUser, unAuthorized } = require('./controllers/users');
 const regExp = require('./constants/constants');
 const NotFoundError = require('./errors/NotFoundError');
@@ -17,20 +18,6 @@ const { requestLogger, errorLogger } = require('./middlewares/logger');
 const MONGO_URL = 'mongodb://localhost:27017/mestodb';
 const { PORT = 3000 } = process.env;
 
-const cors = (req, res, next) => {
-  const { origin } = req.headers;
-  const { method } = req;
-  const requestHeaders = req.headers['access-control-request-headers'];
-  const DEFAULT_ALLOWED_METHODS = 'GET,HEAD,PUT,PATCH,POST,DELETE';
-  res.header('Access-Control-Allow-Origin', origin);
-  res.header('Access-Control-Allow-Credentials', true);
-  if (method === 'OPTIONS') {
-    res.header('Access-Control-Allow-Methods', DEFAULT_ALLOWED_METHODS);
-    res.header('Access-Control-Allow-Headers', requestHeaders);
-    return res.end();
-  }
-  return next();
-};
 mongoose.set('strictQuery', false);
 
 mongoose.connect(MONGO_URL);
@@ -38,12 +25,11 @@ const app = express();
 
 app.use(requestLogger);
 
-app.use(cors);
-
 app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(helmet());
+app.use(cors);
 
 app.get('/crash-test', () => {
   setTimeout(() => {

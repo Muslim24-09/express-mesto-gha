@@ -41,36 +41,17 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-// eslint-disable-next-line func-names
-// userSchema.statics.findUserByCredentials = function (email, password) {
-//   return this.findOne({ email }).select('+password')
-//     .then((user) => {
-//       if (!user) {
-//         throw new UnauthorizedError('Пользователь с таким логином/паролем не найден');
-//       }
-//       return bcrypt.compare(password, user.password)
-//         .then((matched) => {
-//           if (!matched) {
-//             throw new UnauthorizedError('Пользователь с таким логином/паролем не найден');
-//           }
-//           return user;
-//         });
-//     });
-// };
-
 userSchema.statics.findUserByCredentials = function findUserByCredentials(email, password) {
   return this.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
         throw new UnauthorizedError('Неправильные почта или пароль');
       }
-
       return bcrypt.compare(password, user.password)
         .then((matched) => {
           if (!matched) {
             throw new UnauthorizedError('Неправильные почта или пароль');
           }
-
           return user; // теперь user доступен
         });
     });
