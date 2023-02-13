@@ -9,7 +9,7 @@ const helmet = require('helmet');
 const { celebrate, Joi, errors } = require('celebrate');
 
 const auth = require('./middlewares/auth');
-const cors = require('./middlewares/cors');
+// const cors = require('./middlewares/cors');
 const { login, createUser, unAuthorized } = require('./controllers/users');
 const regExp = require('./constants/constants');
 const NotFoundError = require('./errors/NotFoundError');
@@ -31,7 +31,7 @@ app.use(helmet());
 
 app.use(requestLogger);
 
-app.use(cors);
+// app.use(cors);
 app.get('/crash-test', () => {
   setTimeout(() => {
     throw new Error('Сервер сейчас упадёт');
