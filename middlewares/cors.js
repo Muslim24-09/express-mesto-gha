@@ -40,7 +40,6 @@
 //   return next();
 // };
 
-
 // домены, с которых разрешены кросс-доменные запросы
 const allowedCors = [
   'https://mooslim-mesto.nomoredomainsclub.ru',
@@ -82,6 +81,5 @@ const cors = (req, res, next) => {
 
   return next();
 };
-
 
 module.exports = cors;

@@ -23,15 +23,15 @@ mongoose.set('strictQuery', false);
 mongoose.connect(MONGO_URL);
 const app = express();
 
-app.use(requestLogger);
-
-app.use(bodyParser.json());
 app.use(cookieParser());
+
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 app.use(helmet());
 
-app.use(cors);
+app.use(requestLogger);
 
+app.use(cors);
 app.get('/crash-test', () => {
   setTimeout(() => {
     throw new Error('Сервер сейчас упадёт');
@@ -56,6 +56,7 @@ app.post('/signin', celebrate({
 }), login);
 
 app.use(auth);
+
 app.use('/users', require('./routes/users'));
 app.use('/cards', require('./routes/cards'));
 
