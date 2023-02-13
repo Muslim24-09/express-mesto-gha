@@ -41,24 +41,24 @@
 // };
 
 // домены, с которых разрешены кросс-доменные запросы
-const allowedCors = [
-  'https://mooslim-mesto.nomoredomainsclub.ru',
-  'http://mooslim-mesto.nomoredomainsclub.ru',
-  'http://localhost:3000',
-  'https://localhost:3000',
-];
+// const allowedCors = [
+//   'https://mooslim-mesto.nomoredomainsclub.ru',
+//   'http://mooslim-mesto.nomoredomainsclub.ru',
+//   'http://localhost:3000',
+//   'https://localhost:3000',
+// ];
 
 const cors = (req, res, next) => {
   // сохраняем источник запроса в переменную origin
   const { origin } = req.headers;
   // проверяем, что источник запроса есть среди разрешённых
 
-  if (allowedCors.includes(origin)) {
-    // устанавливаем заголовок, который разрешает браузеру запросы с этого источника
-    res.header('Access-Control-Allow-Origin', origin);
-    // запрос на получение данных авторизации с другого домена
-    res.header('Access-Control-Allow-Credentials', true);
-  }
+  // if (allowedCors.includes(origin)) {
+  // устанавливаем заголовок, который разрешает браузеру запросы с этого источника
+  res.header('Access-Control-Allow-Origin', origin);
+  // запрос на получение данных авторизации с другого домена
+  res.header('Access-Control-Allow-Credentials', true);
+  // }
 
   // сохраняем тип запроса (HTTP-метод) в соответствующую переменную
   const { method } = req;
