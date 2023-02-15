@@ -143,9 +143,9 @@ const updateAvatar = (req, res, next) => {
 
 const unAuthorized = (_, res) => {
   res
-    .clearCookie('jwt', {
-      path: '/',
-    })
+    // .clearCookie('jwt', {
+    //   path: '/',
+    // })
     .clearCookie('authorized', {
       path: '/',
     })
