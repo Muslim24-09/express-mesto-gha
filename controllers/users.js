@@ -56,8 +56,16 @@ const login = (req, res, next) => {
         .cookie('jwt', token, {
           maxAge: 3600000 * 24 * 7,
           httpOnly: true,
-          sameSite: true,
+          sameSite: 'none',
+          secure: true,
+        })
+        .cookie('loggedIn', true, {
+          maxAge: 3600000 * 24 * 7,
+          httpOnly: true,
+          sameSite: 'none',
+          secure: true,
         });
+
       return res.send({ token });
     })
     .catch((err) => next(err));
@@ -139,7 +147,8 @@ const unAuthorized = (_, res) => {
     .cookie('jwt', token, {
       maxAge: 3600000 * 24 * 7,
       httpOnly: true,
-      sameSite: true,
+      sameSite: 'none',
+      secure: true,
     })
     .send({ message: 'Успешнo разлогинились' });
 };
