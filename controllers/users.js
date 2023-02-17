@@ -117,7 +117,7 @@ const updateUser = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(new BadRequestError('Неправильно набран логин или пароль'));
+        next(new BadRequestError('В поля введены неверные значения'));
       } else if (err.kind === 'ObjectId') {
         next(new BadRequestError('Ошибка в типе ключа'));
       } else next(err);

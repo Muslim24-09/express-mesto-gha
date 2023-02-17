@@ -5,7 +5,7 @@ const NotFoundError = require('../errors/NotFoundError');
 const ForbiddenError = require('../errors/ForbiddenError');
 
 const getCards = (_, res, next) => {
-  Card.find({})
+  Card.find({}).sort({ createdAt: -1 })
     .then((cards) => {
       res.status(200).send({ data: cards });
     })
@@ -40,11 +40,8 @@ const createCard = (req, res, next) => {
     // .then((card) => res.status(200).send(card))
     .then((card) => res.status(200).send({ data: card }))
     .catch((err) => {
-      if (err.name === 'CastError') {
-        next(new BadRequestError('Переданы некорректные данные'));
-      } else {
-        next(err);
-      }
+      next(new BadRequestError('Переданы некорректные данные'));
+      next(err);
     });
 };
 
