@@ -37,12 +37,8 @@ const createCard = (req, res, next) => {
   Card.create({
     name, link, owner: req.user._id,
   })
-    // .then((card) => res.status(200).send(card))
     .then((card) => res.status(200).send({ data: card }))
-    .catch((err) => {
-      next(new BadRequestError('Переданы некорректные данные'));
-      next(err);
-    });
+    .catch((err) => next(err));
 };
 
 const likeCard = (req, res, next) => {
